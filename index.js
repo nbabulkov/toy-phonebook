@@ -1,9 +1,12 @@
 const express = require('express');
 const morgan = require('morgan');
+const cors = require('cors');
+
 const app = express();
 
 app.use(express.json());
 app.use(morgan('tiny'));
+app.use(cors());
 
 let phonebook = [
   {
@@ -70,7 +73,6 @@ app.post('/api/phonebook', (request, response) => {
     } else {
       person.id = maxId + 1;
       phonebook = phonebook.concat(person);
-      console.log(phonebook);
       response.json(person);
     }
 });
