@@ -1,6 +1,10 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const mongoose = require('mongoose');
+require('dotenv').config()
+
+const Phone = require('./models/phone')
 
 const app = express();
 
@@ -8,19 +12,6 @@ app.use(express.json());
 app.use(morgan('tiny'));
 app.use(express.static('build'));
 app.use(cors());
-
-let phonebook = [
-  {
-    id: 1,
-    name: 'Arto Hellas',
-    number: '010-532-1111'
-  },
-  {
-    id: 2,
-    name: 'Ivan Petrov',
-    number: '+359888888888'
-  }
-];
 
 app.get('/', (request, response) => {
     response.send('<h1>Hello World!</h1>')
@@ -34,17 +25,12 @@ app.get('/info', (request, response) => {
 });
 
 app.get('/api/phonebook', (request, response) => {
-    response.json(phonebook)
+    Phone.find({}).then(phones => response.json(phones));
 });
 
 app.get('/api/phonebook/:id', (request, response) => {
   const id = request.params.id;
-  const person = phonebook.find(p => p.id == id);
-  if (person) {
-    response.json(person);
-  } else {
-    response.status(404).end();
-  }
+  Phone.findById(id).then(phone => response.json(phone));
 });
 
 const isObject = obj => (obj !== null && obj !== undefined && typeof obj === 'object');
@@ -67,14 +53,12 @@ app.post('/api/phonebook', (request, response) => {
       response.status(400).json({
         error: `Missing "name" key from object`
       });
-    } else if (phonebook.filter(p => p.name === person.name).length > 0) {
-      response.status(400).json({
-        error: `Name already exists: ${person.name}`
-      });
     } else {
-      person.id = maxId + 1;
-      phonebook = phonebook.concat(person);
-      response.json(person);
+      const phone = new Phone({
+        ...person,
+        date: new Date(),
+      });
+      phone.save().then(saved => response.json(saved));
     }
 });
 
