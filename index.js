@@ -30,7 +30,7 @@ app.get('/api/phonebook', (request, response) => {
   Phone.find({}).then(phones => response.json(phones));
 });
 
-app.get('/api/phonebook/:id', (request, response) => {
+app.get('/api/phonebook/:id', (request, response, next) => {
   const id = request.params.id;
   Phone.findById(id)
     .then(phone => {
@@ -40,15 +40,11 @@ app.get('/api/phonebook/:id', (request, response) => {
         response.status(404).end();
       }
     })
-    .catch(error => {
-      console.log(error);
-      response.status(500).end();
-    });
-});
+    .catch(error => next(error));
 
 const isObject = obj => (obj !== null && obj !== undefined && typeof obj === 'object');
 
-app.post('/api/phonebook', (request, response) => {
+app.post('/api/phonebook', (request, response, next) => {
     const person = request.body;
     if (!isObject(person)) {
       response.status(400).json({
@@ -67,7 +63,9 @@ app.post('/api/phonebook', (request, response) => {
         ...person,
         date: new Date(),
       });
-      phone.save().then(saved => response.json(saved));
+      phone.save()
+        .then(saved => response.json(saved))
+        .catch(error => next(error));
     }
 });
 
@@ -79,6 +77,23 @@ app.delete('/api/phonebook/:id', (request, response, next) => {
     })
     .catch(error => next(error));
 });
+
+
+// handler of requests with unknown endpoint
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' });
+};
+app.use(unknownEndpoint);
+
+// handler of requests with result to errors
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' });
+  }
+  next(error);
+};
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
