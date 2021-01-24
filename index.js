@@ -32,7 +32,18 @@ app.get('/api/phonebook', (request, response) => {
 
 app.get('/api/phonebook/:id', (request, response) => {
   const id = request.params.id;
-  Phone.findById(id).then(phone => response.json(phone));
+  Phone.findById(id)
+    .then(phone => {
+      if (phone){
+        response.json(phone);
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch(error => {
+      console.log(error);
+      response.status(500).end();
+    });
 });
 
 const isObject = obj => (obj !== null && obj !== undefined && typeof obj === 'object');
