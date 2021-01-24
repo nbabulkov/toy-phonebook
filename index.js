@@ -45,29 +45,33 @@ app.get('/api/phonebook/:id', (request, response, next) => {
 
 const isObject = obj => (obj !== null && obj !== undefined && typeof obj === 'object');
 
+const validation = person => {
+  if (!isObject(person)) {
+		return {error: `Invalid object: ${person}`};
+  } else if (!('number' in person)) {
+    return {error: 'Missing "number" key from object'};
+  } else if (!('name' in person)) {
+    return {error: `Missing "name" key from object`};
+	} else {
+		return;
+	}
+};
+
 app.post('/api/phonebook', (request, response, next) => {
-    const person = request.body;
-    if (!isObject(person)) {
-      response.status(400).json({
-        error: `Invalid object: ${person}`
-      });
-    } else if (!('number' in person)) {
-      response.status(400).json({
-        error: 'Missing "number" key from object'
-      });
-    } else if (!('name' in person)) {
-      response.status(400).json({
-        error: `Missing "name" key from object`
-      });
-    } else {
-      const phone = new Phone({
-        ...person,
-        date: new Date(),
-      });
-      phone.save()
-        .then(saved => response.json(saved))
-        .catch(error => next(error));
-    }
+  const person = request.body;
+	const error = validation(person);
+
+	if (error) {
+		response.status(400).json(error);
+  } else {
+    const phone = new Phone({
+      ...person,
+      date: new Date(),
+    });
+    phone.save()
+      .then(saved => response.json(saved))
+      .catch(error => next(error));
+  }
 });
 
 app.delete('/api/phonebook/:id', (request, response, next) => {
@@ -79,6 +83,19 @@ app.delete('/api/phonebook/:id', (request, response, next) => {
     .catch(error => next(error));
 });
 
+app.put('/api/phonebook/:id', (request, response, next) => {
+  const person = request.body;
+	const error = validation(person);
+  const phoneEntry = {
+		...person,
+		date: new Date(),
+  };
+  Phone.findByIdAndUpdate(request.params.id, phoneEntry, { new: true })
+    .then(updated => {
+      response.json(updated);
+    })
+    .catch(error => next(error));
+});
 
 // handler of requests with unknown endpoint
 const unknownEndpoint = (request, response) => {
