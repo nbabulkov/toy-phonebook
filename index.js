@@ -18,14 +18,16 @@ app.get('/', (request, response) => {
 });
 
 app.get('/info', (request, response) => {
-  const countPeople = `Phonebook has info for ${phonebook.length} people`;
-  const time = new Date().toString();
-  console.log(time);
-  response.send(`<div>${countPeople}</div></br><div>${time}</div>`);
+  Phone.countDocuments({}).then(count => {
+    const countPeople = `Phonebook has info for ${count} people`;
+    const time = new Date().toString();
+    console.log(time);
+    response.send(`<div>${countPeople}</div></br><div>${time}</div>`);
+  });
 });
 
 app.get('/api/phonebook', (request, response) => {
-    Phone.find({}).then(phones => response.json(phones));
+  Phone.find({}).then(phones => response.json(phones));
 });
 
 app.get('/api/phonebook/:id', (request, response) => {
@@ -60,9 +62,11 @@ app.post('/api/phonebook', (request, response) => {
 
 app.delete('/api/phonebook/:id', (request, response) => {
   const id = Number(request.params.id);
-  phonebook = phonebook.filter(p => p.id !== id);
-
-  response.status(204).end();
+  Phone.findByIdAndRemove(id)
+    .then(result => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
 });
 
 const PORT = process.env.PORT || 3001;
