@@ -36,10 +36,6 @@ app.get('/api/phonebook/:id', (request, response) => {
 const isObject = obj => (obj !== null && obj !== undefined && typeof obj === 'object');
 
 app.post('/api/phonebook', (request, response) => {
-    const maxId = phonebook.length > 0
-      ? Math.max(...phonebook.map(n => n.id))
-      : 0;
-
     const person = request.body;
     if (!isObject(person)) {
       response.status(400).json({
