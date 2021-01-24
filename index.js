@@ -60,13 +60,13 @@ app.post('/api/phonebook', (request, response) => {
     }
 });
 
-app.delete('/api/phonebook/:id', (request, response) => {
-  const id = Number(request.params.id);
+app.delete('/api/phonebook/:id', (request, response, next) => {
+  const id = request.params.id;
   Phone.findByIdAndRemove(id)
     .then(result => {
-      response.status(204).end()
+      response.status(204).end();
     })
-    .catch(error => next(error))
+    .catch(error => next(error));
 });
 
 const PORT = process.env.PORT || 3001;
