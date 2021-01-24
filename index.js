@@ -2,9 +2,9 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const mongoose = require('mongoose');
-require('dotenv').config()
+require('dotenv').config();
 
-const Phone = require('./models/phone')
+const Phone = require('./models/phone');
 
 const app = express();
 
@@ -14,7 +14,7 @@ app.use(express.static('build'));
 app.use(cors());
 
 app.get('/', (request, response) => {
-    response.send('<h1>Hello World!</h1>')
+    response.send('<h1>Hello World!</h1>');
 });
 
 app.get('/info', (request, response) => {
@@ -34,13 +34,14 @@ app.get('/api/phonebook/:id', (request, response, next) => {
   const id = request.params.id;
   Phone.findById(id)
     .then(phone => {
-      if (phone){
+      if (phone) {
         response.json(phone);
       } else {
         response.status(404).end();
       }
     })
     .catch(error => next(error));
+});
 
 const isObject = obj => (obj !== null && obj !== undefined && typeof obj === 'object');
 
@@ -97,5 +98,5 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
+    console.log(`Server running on port ${PORT}`);
 });
